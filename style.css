@@ -38,4 +38,5 @@ body {
 
 .theme-container {
   padding: var(--sm);
+  border: 1px solid red;
 }
