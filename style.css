@@ -153,6 +153,7 @@ h1 {
   display: grid;
   place-items: center;
   backdrop-filter: blur(10px);
+  opacity: 0;
   pointer-events: none;
   z-index: 4;
   transition: all 300ms ease-in-out;
@@ -187,6 +188,7 @@ h1 {
   color: inherit;
   background-color: var(--light);
   padding: 0.5rem;
+  width: 150px;
 }
 
 #title:focus {
@@ -194,7 +196,12 @@ h1 {
 }
 
 .icons {
-  border: 1px solid red;
+  display: grid;
+  place-items: center;
+  padding: var(--sm) 0;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-gap: 1rem;
 }
 
 .icon {
@@ -204,4 +211,36 @@ h1 {
   background-color: var(--primary);
   color: var(--secondary);
   border: 4px solid var(--secondary);
+  display: grid;
+  place-items: center;
+  transition: all 300ms ease-in-out;
+  cursor: pointer;
+}
+
+.icon.selected {
+  background-color: var(--secondary);
+  color: var(--primary);
+}
+
+.modal-btns {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+#add,
+#cancel {
+  font-size: inherit;
+  font-family: inherit;
+  color: inherit;
+  background-color: var(--light);
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 300ms ease-in-out;
+}
+
+#add:hover,
+#cancel:hover {
+  color: var(--primary);
+  background-color: var(--secondary);
 }
