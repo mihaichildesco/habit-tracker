@@ -3,10 +3,14 @@ const habits = document.querySelectorAll(".habit-btn");
 const themeBtn = document.querySelector("#theme");
 const modalContainer = document.querySelector(".modal-container");
 const createHabitBtn = document.querySelector(".new-habit__add");
+const habitContainer = document.querySelector(".habit-container");
 const newHabitTitle = document.querySelector("#title");
 const icons = document.querySelectorAll(".icon");
-const addBtn = document.getElementById("#add");
-const cancelBtn = document.querySelector("#cancel");
+const addBtn = document.getElementById("add");
+const cancelBtn = document.getElementById("cancel");
+const deleteBtn = document.querySelector("#delete");
+const contextMenu = document.querySelector(".context-menu");
+let habitToBeDeleted;
 
 // FUNCTIONS
 
@@ -16,6 +20,48 @@ const storage = {
   },
   checkTheme() {
     return localStorage.getItem("habitsapp.theme");
+  },
+
+  saveHabit(object) {
+    const currentHabits = storage.getHabits();
+    if (currentHabits === null || currentHabits === "") {
+      localStorage.setItem("habitsapp.habits", JSON.stringify(object));
+    } else {
+      currentHabits.push(object);
+      localStorage.setItem("habitsapp.habits", JSON.stringify(currentHabits));
+    }
+    console.table(currentHabits);
+  },
+
+  getHabits() {
+    let currentHabits;
+    if (localStorage.getItem("habitsapp.habits") === null) {
+      currentHabits = [];
+    } else {
+      currentHabits = JSON.parse(localStorage.getItem("habitsapp.habits"));
+    }
+    return currentHabits;
+  },
+
+  habitStatus(id) {
+    const currentHabits = storage.getHabits();
+    currentHabits.forEach((habit) => {
+      if (habit.id !== Number(id)) return;
+      habit.completed === true
+        ? (habit.completed = false)
+        : (habit.completed = true);
+    });
+    localStorage.setItem("habitsapp.habits", JSON.stringify(currentHabits));
+  },
+
+  deleteHabit(id) {
+    const currentHabits = storage.getHabits();
+    currentHabits.forEach((habit, index) => {
+      if (habit.id === Number(id)) {
+        currentHabits.splice(index, 1);
+      }
+    });
+    localStorage.setItem("habitsapp.habits", JSON.stringify(currentHabits));
   },
 };
 
@@ -44,6 +90,34 @@ const ui = {
       icon.classList.remove("selected");
     });
   },
+  addNewHabit(title, icon, id, completed) {
+    const habitDiv = document.createElement("div");
+    habitDiv.classList.add("habit");
+    habitDiv.innerHTML = `
+    <button class="habit-btn ${
+      completed === true ? "completed" : ""
+    } " data-id="${id}" data-title="${title}">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+        ${icon}
+      </svg>  
+    </button>`;
+
+    habitContainer.appendChild(habitDiv);
+  },
+  refreshHabits() {
+    const uiHabits = document.querySelectorAll(".habit");
+    uiHabits.forEach((habit) => habit.remove());
+    const currentHabits = storage.getHabits();
+
+    currentHabits.forEach((habit) => {
+      ui.addNewHabit(habit.title, habit.icon, habit.id, habit.completed);
+    });
+  },
+  deleteHabit(id) {
+    const habitToBeDeleted = document.querySelector(`[data-id="${id}"]`);
+    habitToBeDeleted.remove();
+    ui.refreshHabits();
+  },
 };
 
 // EVENT LISTENERS
@@ -53,6 +127,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // Load theme
   const theme = storage.checkTheme();
   if (theme === "dark") ui.theme();
+  ui.refreshHabits();
 });
 
 // EVENT: theme button
@@ -72,8 +147,56 @@ icons.forEach((icon) => {
   });
 });
 
-habits.forEach((habit) => {
-  habit.addEventListener("click", () => {
-    habit.classList.toggle("completed");
+// EVENT: add new habit btn
+addBtn.addEventListener("click", () => {
+  console.log("clicked");
+  const habitTitle = newHabitTitle.value;
+  let habitIcon;
+  icons.forEach((icon) => {
+    if (!icon.classList.contains("selected")) return;
+    habitIcon = icon.querySelector("svg").innerHTML;
   });
+  const habitID = Math.random();
+  ui.addNewHabit(habitTitle, habitIcon, habitID);
+  ui.closeModal();
+
+  const habit = {
+    id: habitID,
+    title: habitTitle,
+    icon: habitIcon,
+    completed: false,
+  };
+  storage.saveHabit(habit);
+});
+
+// EVENT: complete habit
+
+habitContainer.addEventListener("click", (e) => {
+  if (!e.target.classList.contains("habit-btn")) return;
+  e.target.classList.toggle("completed");
+  storage.habitStatus(e.target.dataset.id);
+});
+
+// EVENT: context menu
+
+habitContainer.addEventListener("contextmenu", (e) => {
+  if (!e.target.classList.contains("habit-btn")) return;
+  e.preventDefault();
+  e.target.classList.toggle("completed");
+  storage.habitStatus(e.target.dataset.id);
+  habitToBeDeleted = e.target.dataset.id;
+
+  const { clientX: mouseX, clientY: mouseY } = e;
+  contextMenu.style.top = `${mouseX}px`;
+  contextMenu.style.left = `${mouseY}px`;
+  const contextTitle = document.querySelector("#habitTitle");
+  contextTitle.textContent = e.target.dataset.title;
+  contextMenu.classList.add("active");
+});
+
+// Event: delete habit btn
+deleteBtn.addEventListener("click", () => {
+  storage.deleteHabit(habitToBeDeleted);
+  contextMenu.classList.remove("active");
+  ui.deleteHabit(habitToBeDeleted);
 });

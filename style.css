@@ -244,3 +244,38 @@ h1 {
   color: var(--primary);
   background-color: var(--secondary);
 }
+
+.context-menu {
+  position: fixed;
+  z-index: 1000;
+  width: 200px;
+  background-color: var(--primary);
+  padding: var(sm);
+  box-shadow: 3px solid var(--secondary);
+  border: 3px solid var(--secondary);
+  display: none;
+}
+
+.context-menu.active {
+  display: grid;
+}
+
+#habitTitle::before {
+  content: "Title";
+}
+
+#delete {
+  font-size: inherit;
+  font-family: inherit;
+  color: var(--danger);
+  background-color: var(--primary);
+  padding: 0.5rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: all 200ms ease-in-out;
+}
+
+#delete:hover {
+  color: var(--primary);
+  background-color: var(--danger);
+}
